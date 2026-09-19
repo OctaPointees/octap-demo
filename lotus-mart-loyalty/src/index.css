@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --brand: #9f0261;
+  --brand-wash: rgba(159, 2, 97, 0.06);
+  --brand-soft: rgba(159, 2, 97, 0.1);
+  --brand-hover: #830250;
+  --ground: #faf7f9;
+  --surface: #ffffff;
+  --surface-2: #f3eef1;
+  --ink: #17111a;
+  --ink-2: #4a3f4c;
+  --muted: #7b6e7c;
+  --line: #e7dfe4;
+  --sans: "Figtree", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --display: "Archivo", "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+  --rb: 0.7rem;
+  --rf: 0.4rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--ink);
+}
+
+.font-display {
+  font-family: var(--display);
+}
+
+.font-mono {
+  font-family: var(--mono);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
