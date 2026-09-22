@@ -7,7 +7,8 @@ import PartnerDetailPage from "./admin/pages/PartnerDetailPage";
 import PartnersPage from "./admin/pages/PartnersPage";
 import AdminVouchersPage from "./admin/pages/VouchersPage";
 import AuthenticationEntryPoint from "./auth";
-import { RequireRole, RootRedirect } from "./guards";
+import { RequireRole } from "./guards";
+import OctaPLandingPage from "./landing";
 import MerchantLayout from "./merchant";
 import CampaignsPage from "./merchant/pages/CampaignsPage";
 import MerchantDashboardPage from "./merchant/pages/DashboardPage";
@@ -21,7 +22,8 @@ import NotFoundPage from "./NotFoundPage";
 import WalletApp from "./wallet";
 
 export const router = createBrowserRouter([
-  { path: "/", element: <RootRedirect /> },
+  { path: "/", element: <OctaPLandingPage /> },
+  { path: "/landing", element: <OctaPLandingPage /> },
   { path: "/login", element: <AuthenticationEntryPoint /> },
   { path: "/wallet", element: <WalletApp /> },
   {

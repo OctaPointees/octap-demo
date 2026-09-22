@@ -1,7 +1,7 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { Form } from "@base-ui/react/form";
 import { useMutation } from "@tanstack/react-query";
-import { Check, DeviceMobile, Fingerprint, LockKey, ShieldCheck, Stack, Warning } from "phosphor-react";
+import { Check, DeviceMobile, Fingerprint, LockKey, ShieldCheck, Stack, Warning, ArrowLeft } from "phosphor-react";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { FormField, TextInput } from "../../components/shared/Controls";
@@ -114,6 +114,10 @@ export default function AuthenticationEntryPoint() {
       <section className="flex items-center justify-center overflow-y-auto p-6">
         <div className="flex w-full max-w-sm flex-col gap-6">
           <div>
+            <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline mb-3">
+              <ArrowLeft size={13} weight="bold" />
+              <span>Back to OctaP Home</span>
+            </Link>
             <h2 className="text-2xl font-bold">Sign in</h2>
             <p className="text-sm opacity-65">Merchant dashboard & OctaP operator console</p>
           </div>
