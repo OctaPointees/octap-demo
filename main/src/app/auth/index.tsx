@@ -1,24 +1,55 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { Form } from "@base-ui/react/form";
 import { useMutation } from "@tanstack/react-query";
-import { Check, DeviceMobile, Fingerprint, LockKey, ShieldCheck, Stack, Warning, ArrowLeft } from "phosphor-react";
+import {
+  Check,
+  DeviceMobile,
+  Fingerprint,
+  LockKey,
+  ShieldCheck,
+  Stack,
+  Warning,
+  ArrowLeft,
+} from "phosphor-react";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { FormField, TextInput } from "../../components/shared/Controls";
 import { Button } from "../../components/shared/Button";
 import { Modal } from "../../components/shared/Modal";
 import { useSession } from "../../queries/useSession";
-import { authService, DEMO_ACCOUNTS, DEMO_PASSWORD } from "../../services/auth.service";
+import {
+  authService,
+  DEMO_ACCOUNTS,
+  DEMO_PASSWORD,
+} from "../../services/auth.service";
 import { fieldErrorsOf, formErrorOf } from "../../utils/errors";
 import { homeFor } from "../../utils/constants";
 
 const PILLARS = [
-  { icon: Stack, title: "Tenant-isolated points", text: "Every merchant runs its own point token and treasury on Sui." },
-  { icon: ShieldCheck, title: "Fraud-proof ledger", text: "Each mint and burn is anchored on-chain and fully auditable." },
-  { icon: Fingerprint, title: "Zero Web3 friction", text: "Members sign in with a phone number via zkLogin; gas is sponsored." },
+  {
+    icon: Stack,
+    title: "Tenant-isolated points",
+    text: "Every merchant runs its own point token and treasury on Sui.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Fraud-proof ledger",
+    text: "Each mint and burn is anchored on-chain and fully auditable.",
+  },
+  {
+    icon: Fingerprint,
+    title: "Zero Web3 friction",
+    text: "Members sign in with a phone number via zkLogin; gas is sponsored.",
+  },
 ];
 
-function ForgotPassword({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+function ForgotPassword({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
   const [email, setEmail] = useState("");
   const reset = useMutation({ mutationFn: authService.requestPasswordReset });
   const errors = fieldErrorsOf(reset.error);
@@ -46,10 +77,22 @@ function ForgotPassword({ open, onOpenChange }: { open: boolean; onOpenChange: (
           }}
         >
           <FormField label="Work email" error={errors.email}>
-            <TextInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} invalid={!!errors.email} autoFocus />
+            <TextInput
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              invalid={!!errors.email}
+              autoFocus
+            />
           </FormField>
-          <Button type="submit" className="btn-primary" disabled={reset.isPending}>
-            {reset.isPending && <span className="loading loading-spinner loading-sm" />}
+          <Button
+            type="submit"
+            className="btn-primary"
+            disabled={reset.isPending}
+          >
+            {reset.isPending && (
+              <span className="loading loading-spinner loading-sm" />
+            )}
             Send reset link
           </Button>
         </Form>
@@ -71,11 +114,15 @@ export default function AuthenticationEntryPoint() {
     mutationFn: authService.login,
     onSuccess: (s) => {
       const from = (location.state as { from?: string } | null)?.from;
-      navigate(from?.startsWith(homeFor(s.user.role)) ? from : homeFor(s.user.role), { replace: true });
+      navigate(
+        from?.startsWith(homeFor(s.user.role)) ? from : homeFor(s.user.role),
+        { replace: true },
+      );
     },
   });
 
-  if (session && !login.isPending && !login.isSuccess) return <Navigate to={homeFor(session.user.role)} replace />;
+  if (session && !login.isPending && !login.isSuccess)
+    return <Navigate to={homeFor(session.user.role)} replace />;
 
   const errors = fieldErrorsOf(login.error);
   const formError = formErrorOf(login.error);
@@ -92,8 +139,13 @@ export default function AuthenticationEntryPoint() {
           <span className="text-xl font-bold">OctaP</span>
         </div>
         <div className="relative max-w-md">
-          <h1 className="text-4xl leading-tight font-bold">Credit-as-a-Service for modern loyalty.</h1>
-          <p className="mt-4 opacity-75">Launch secure, isolated loyalty programs backed by the Sui blockchain — with a Web2 experience your customers already know.</p>
+          <h1 className="text-4xl leading-tight font-bold">
+            Credit-as-a-Service for modern loyalty Test.
+          </h1>
+          <p className="mt-4 opacity-75">
+            Launch secure, isolated loyalty programs backed by the Sui
+            blockchain — with a Web2 experience your customers already know.
+          </p>
           <ul className="mt-10 flex flex-col gap-6">
             {PILLARS.map((p) => (
               <li key={p.title} className="flex gap-4">
@@ -108,18 +160,25 @@ export default function AuthenticationEntryPoint() {
             ))}
           </ul>
         </div>
-        <div className="relative text-xs opacity-50">© 2026 OctaPoint · Design draft — all data is simulated</div>
+        <div className="relative text-xs opacity-50">
+          © 2026 OctaPoint · Design draft — all data is simulated
+        </div>
       </section>
 
       <section className="flex items-center justify-center overflow-y-auto p-6">
         <div className="flex w-full max-w-sm flex-col gap-6">
           <div>
-            <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline mb-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline mb-3"
+            >
               <ArrowLeft size={13} weight="bold" />
               <span>Back to OctaP Home</span>
             </Link>
             <h2 className="text-2xl font-bold">Sign in</h2>
-            <p className="text-sm opacity-65">Merchant dashboard & OctaP operator console</p>
+            <p className="text-sm opacity-65">
+              Merchant dashboard & OctaP operator console
+            </p>
           </div>
 
           {formError && (
@@ -136,10 +195,24 @@ export default function AuthenticationEntryPoint() {
             }}
           >
             <FormField label="Work email" error={errors.email}>
-              <TextInput type="email" autoComplete="username" placeholder="you@company.vn" value={email} onChange={(e) => setEmail(e.target.value)} invalid={!!errors.email} />
+              <TextInput
+                type="email"
+                autoComplete="username"
+                placeholder="you@company.vn"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                invalid={!!errors.email}
+              />
             </FormField>
             <FormField label="Password" error={errors.password}>
-              <TextInput type="password" autoComplete="current-password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} invalid={!!errors.password} />
+              <TextInput
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                invalid={!!errors.password}
+              />
             </FormField>
             <div className="flex items-center justify-between text-sm">
               <label className="flex cursor-pointer items-center gap-2">
@@ -154,18 +227,32 @@ export default function AuthenticationEntryPoint() {
                 </Checkbox.Root>
                 Keep me signed in
               </label>
-              <button type="button" className="link link-primary" onClick={() => setForgotOpen(true)}>
+              <button
+                type="button"
+                className="link link-primary"
+                onClick={() => setForgotOpen(true)}
+              >
                 Forgot password?
               </button>
             </div>
-            <Button type="submit" className="btn-primary" disabled={login.isPending}>
-              {login.isPending ? <span className="loading loading-spinner loading-sm" /> : <LockKey size={18} />}
+            <Button
+              type="submit"
+              className="btn-primary"
+              disabled={login.isPending}
+            >
+              {login.isPending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <LockKey size={18} />
+              )}
               Sign in
             </Button>
           </Form>
 
           <div className="rounded-box border border-dashed border-base-300 p-4">
-            <div className="mb-2 text-xs font-semibold tracking-wide uppercase opacity-60">Demo accounts · password “{DEMO_PASSWORD}”</div>
+            <div className="mb-2 text-xs font-semibold tracking-wide uppercase opacity-60">
+              Demo accounts · password “{DEMO_PASSWORD}”
+            </div>
             <div className="flex flex-col gap-1">
               {DEMO_ACCOUNTS.map((a) => (
                 <button
