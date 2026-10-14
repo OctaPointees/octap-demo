@@ -18,7 +18,7 @@ import type {
 import { kpis, series } from "./core/analytics";
 import {
   adjustPoints,
-  earnPoints,
+  earnPointsOnChain,
   findOrCreateEndUser,
   findOrCreateMembership,
   isCampaignLive,
@@ -431,19 +431,24 @@ export const merchantService = {
     });
   },
 
-  /** Same call the POS SDK makes: `octap.points.earn({ phone, amount })`. */
+  /**
+   * Same call the POS SDK makes: `octap.points.earn({ phone, amount })` — and, unlike every other
+   * call in this service, a REAL one: it round-trips through OctaP Core to a real Sui testnet
+   * transaction (see core/ledger.ts's earnPointsOnChain and services/octap-core.ts). Requires
+   * OctaP Core's API and worker running locally; see that repo's README.
+   */
   issuePoints(input: IssuePointsInput) {
     return simulate(
       "POST /v1/points/earn",
-      (): { tx: LedgerTx; totalPoints: number; balance: number; memberName: string; newMember: boolean } => {
+      async (): Promise<{ tx: LedgerTx; totalPoints: number; balance: number; memberName: string; newMember: boolean }> => {
         const tenantId = requireMerchant("cashier");
         const phone = normalizePhone(input.phone);
         if (!phone) throw badRequest("Invalid phone number", { phone: "Use a Vietnamese mobile number, e.g. 0901 234 567" });
         const tenant = tenantOf(tenantId);
         const user = findOrCreateEndUser(phone);
         const { membership, created } = findOrCreateMembership(tenant, user.id);
-        const { tx, quote } = earnPoints({ tenant, membership, amountVnd: input.amountVnd, channel: input.channel, isNewMember: created, actor: actorEmail() });
-        return { tx, totalPoints: quote.totalPoints, balance: membership.balance, memberName: user.displayName, newMember: created };
+        const { tx, totalPoints } = await earnPointsOnChain({ tenant, membership, phone, amountVnd: input.amountVnd, channel: input.channel, actor: actorEmail() });
+        return { tx, totalPoints, balance: membership.balance, memberName: user.displayName, newMember: created };
       },
       input,
     );

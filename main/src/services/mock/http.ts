@@ -80,7 +80,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function simulate<T>(
   endpoint: string,
-  handler: () => T,
+  handler: () => T | Promise<T>,
   body?: unknown,
 ): Promise<T> {
   const [method, path] = endpoint.split(" ");
@@ -91,7 +91,9 @@ export async function simulate<T>(
     if (settings.failureRate && live.chance(settings.failureRate)) {
       throw new ApiError(503, "service_unavailable", "Upstream Sui fullnode timed out. Please retry.");
     }
-    const result = handler();
+    // `await` on a non-Promise resolves immediately, so every existing synchronous handler is
+    // unaffected — this only matters for handlers (like issuePoints) that now call the real API.
+    const result = await handler();
     if (method !== "GET") commit();
     const cloned = result === undefined ? result : structuredClone(result);
     record({ method, path, status: method === "POST" ? 201 : 200, durationMs: duration, body, response: cloned });

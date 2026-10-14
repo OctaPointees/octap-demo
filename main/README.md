@@ -2,7 +2,15 @@
 
 This is a **design preview** of OctaP, a loyalty points platform. It runs entirely on your own computer.
 
-> **Good to know:** There is no real server or database. All data is **fake demo data**, and nothing you do here can affect real customers, real money or real systems, so feel free to click anything.
+> **Good to know:** Almost everything here is **fake demo data** with no real server or database,
+> so feel free to click anything. The one exception: **Issue points** (Store owner /
+> Store cashier → "Issue points") makes a REAL call to [OctaP Core](https://github.com/OctaPointees/octap-core)
+> and lands a real transaction on Sui **testnet** — the tx digest shown is clickable and opens a
+> real block explorer. Everything else (campaigns, rewards, redemption, the wallet app, admin) is
+> still a local simulation. Issue points needs OctaP Core's API and worker running locally first
+> (`npm run start:api` and `npm run start:worker` from that repo, with `DATABASE_URL` and
+> `SUI_ISSUER_PRIVATE_KEY` set — see its README) at `http://127.0.0.1:3000`; if Core isn't running,
+> that one page will show a connection error instead of awarding points.
 
 ---
 
@@ -110,7 +118,7 @@ Each area below matches a feature in the project scope. Use these as a starting 
 
 ### ✅ Store owner - `owner@lotusmart.vn`
 
-- [ ] **Issue points:** enter a phone number and a bill amount. Check the points preview, then click **Award points** and look at the receipt.
+- [ ] **Issue points:** enter a phone number and a bill amount. Check the points preview, then click **Award points** and look at the receipt. This one is real — expect it to take a few seconds (a real testnet transaction), and the receipt's "Points preview" total won't exactly match the awarded amount (see the note at the top of this file).
 - [ ] **Campaigns → New campaign:** set an end date _before_ the start date and check for an error. Fix it and save.
 - [ ] **Campaigns:** use the **⋮** menu to pause, resume or end a campaign.
 - [ ] **Rewards → New reward:** submit it. It should show **Pending Review**.

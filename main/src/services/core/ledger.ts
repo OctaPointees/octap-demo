@@ -14,6 +14,7 @@ import { getDb } from "../mock/db";
 import { badRequest, conflict, forbidden } from "../mock/http";
 import { live, suiObjectId, txDigest, uid, voucherCode } from "../mock/random";
 import { tierFor } from "../mock/seed";
+import { octapCore } from "../octap-core";
 
 /**
  * Shared "on-chain" operations used by the merchant, POS/SDK and wallet services.
@@ -232,6 +233,92 @@ export function earnPoints(opts: {
   });
 
   return { tx, quote, membership };
+}
+
+/**
+ * Same business effect as `earnPoints`, but the mint is a REAL Sui testnet transaction via OctaP
+ * Core (see services/octap-core.ts) instead of local arithmetic. Used only by
+ * `merchant.service.ts`'s `issuePoints` (the "Issue points" POS page) — campaigns/rewards/
+ * redemption stay on the local mock.
+ *
+ * The credited amount comes back from Core's own policy (today: one shared demo program/policy
+ * for every tenant, see OctaP_Core's docs/roadmap.md), not from this app's local `quoteEarn` — so
+ * the real total can differ from the pre-submit "Points preview", which is still a pure local
+ * estimate of what this tenant's *configured* program would award. That gap is the current,
+ * disclosed state of the real system, not a demo bug: per-tenant on-chain programs
+ * (`domain/programs`) aren't built yet.
+ */
+export async function earnPointsOnChain(opts: {
+  tenant: Tenant;
+  membership: Membership;
+  phone: string;
+  amountVnd: number;
+  channel: TxChannel;
+  actor: string;
+}) {
+  const { tenant, membership, phone, amountVnd, channel, actor } = opts;
+  assertTenantOperational(tenant);
+  if (!Number.isFinite(amountVnd) || amountVnd < 10_000) {
+    throw badRequest("Bill amount must be at least 10,000 ₫", { amountVnd: "Minimum is 10,000 ₫" });
+  }
+  if (monthToDateMinted(tenant.id) + amountVnd / 10_000 > tenant.monthlyMintCap) {
+    // Local-only guard (Core doesn't enforce a BudgetShard/mint cap yet, see its roadmap); keeps
+    // this existing demo business rule testable even though it isn't chain-enforced today.
+    throw conflict("Monthly mint cap reached for this tenant. Contact OctaP support to raise it.");
+  }
+
+  const { organizationEndUserId } = await octapCore.ensureMemberByPhone(phone, undefined);
+  const idempotencyKey = `demo-pos-${membership.id}-${Date.now()}`;
+  const { transactionId } = await octapCore.earn({
+    organizationEndUserId,
+    pointsAmount: amountVnd,
+    idempotencyKey,
+    receiptReference: `POS bill ${amountVnd.toLocaleString("en-US")} VND`,
+  });
+
+  const confirmed = await octapCore.waitForConfirmation(organizationEndUserId, transactionId);
+  if (confirmed.status === "FAILED") {
+    throw new Error("The on-chain transaction failed. Check the OctaP Core worker log for details.");
+  }
+
+  const points = confirmed.pointsAmount;
+  membership.balance += points;
+  membership.lifetimeEarned += points;
+  membership.tier = tierFor(membership.lifetimeEarned);
+  membership.lastActiveAt = new Date().toISOString();
+
+  const tx: LedgerTx = {
+    id: uid("tx"),
+    tenantId: tenant.id,
+    membershipId: membership.id,
+    kind: "earn",
+    points,
+    amountVnd,
+    campaignIds: [],
+    channel,
+    status: "confirmed",
+    txDigest: confirmed.blockchainDigest ?? "(digest unavailable)",
+    // Checkpoint/gas aren't surfaced by Core's public API yet — these two fields stay cosmetic.
+    checkpoint: nextCheckpoint(),
+    gasMist: live.int(1_600_000, 3_900_000),
+    createdAt: new Date().toISOString(),
+  };
+  getDb().ledger.unshift(tx);
+
+  bumpStat(tenant.id, { earned: points, txCount: 1, revenueVnd: amountVnd, gasMist: tx.gasMist, apiCalls: channel === "dashboard" ? 0 : 1 });
+
+  writeAudit({
+    actorType: channel === "dashboard" ? "merchant" : channel === "mcp" ? "mcp_agent" : channel === "wallet" ? "system" : "api_key",
+    actorName: actor,
+    action: "points.mint",
+    tenantId: tenant.id,
+    severity: "info",
+    summary: `Minted ${points} ${tenant.pointSymbol} for a ${amountVnd.toLocaleString("en-US")} ₫ bill — real Sui testnet transaction`,
+    txDigest: tx.txDigest,
+    onChain: true,
+  });
+
+  return { tx, totalPoints: points, membership };
 }
 
 export function adjustPoints(opts: {

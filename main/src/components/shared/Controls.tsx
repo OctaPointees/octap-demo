@@ -132,7 +132,10 @@ export function CopyButton({ value, label }: { value: string; label?: string }) 
 
 /** Sui transaction digest / object id with copy + explorer link. */
 export function ChainRef({ value, kind = "tx" }: { value: string; kind?: "tx" | "object" | "account" }) {
-  const href = `https://suiscan.xyz/mainnet/${kind}/${value}`;
+  // testnet, not mainnet: every real transaction this app can produce (Issue points) lands on
+  // OctaP Core's testnet demo program (see contracts/sui/DEPLOYMENTS.md in OctaP_Core). The
+  // fake digests the rest of the app still generates aren't real on either network.
+  const href = `https://suiscan.xyz/testnet/${kind}/${value}`;
   return (
     <span className="inline-flex items-center gap-0.5 font-mono text-xs">
       <span title={value}>{shortHash(value, kind === "tx" ? 8 : 6, 4)}</span>
